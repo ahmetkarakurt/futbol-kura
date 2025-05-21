@@ -24,7 +24,7 @@ export function removeClient(id: string) {
 /**
  * SSE istemcilerine bildirim gönderir
  */
-function notifyClients(data: any) {
+export function notifyClients(data: any) {
   const eventData = `data: ${JSON.stringify(data)}\n\n`;
 
   clients.forEach(client => {
