@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { notifyClients } from '../../score-events/route';
+import { notifyClients } from '../../utils/events';
 
 const prisma = new PrismaClient();
 
@@ -29,18 +29,25 @@ export async function POST(request: Request) {
       select: { homeScore: true, awayScore: true }
     });
 
+    if (!currentMatch) {
+      return NextResponse.json(
+        { error: 'Maç bulunamadı' },
+        { status: 404 }
+      );
+    }
+
     // Gol oldu mu kontrol et
     const goalScored = (
-      (currentMatch?.homeScore !== homeScore || currentMatch?.awayScore !== awayScore) && 
-      (currentMatch?.homeScore !== null || currentMatch?.awayScore !== null)
+      (currentMatch.homeScore !== homeScore || currentMatch.awayScore !== awayScore) && 
+      (currentMatch.homeScore !== null || currentMatch.awayScore !== null)
     );
 
     // Hangi takım gol attı?
     let scoringTeam = null;
     if (goalScored) {
-      if (currentMatch?.homeScore !== null && homeScore > currentMatch.homeScore) {
+      if (currentMatch.homeScore !== null && homeScore > currentMatch.homeScore) {
         scoringTeam = 'home';
-      } else if (currentMatch?.awayScore !== null && awayScore > currentMatch.awayScore) {
+      } else if (currentMatch.awayScore !== null && awayScore > currentMatch.awayScore) {
         scoringTeam = 'away';
       }
     }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { addClient, removeClient } from '../utils/events';
 
 const prisma = new PrismaClient();
 
@@ -15,14 +16,14 @@ export async function GET(request: NextRequest) {
   const stream = new ReadableStream({
     start(controller) {
       // Yeni istemciyi clients listesine ekle
-      clients.push({ id: clientId, controller });
+      addClient(clientId, controller);
       
       // İlk bağlantı mesajını gönder
       controller.enqueue(`data: ${JSON.stringify({ type: 'connection', message: 'Bağlantı kuruldu' })}\n\n`);
     },
     cancel() {
       // Bağlantı kapandığında istemciyi listeden kaldır
-      clients = clients.filter(client => client.id !== clientId);
+      removeClient(clientId);
     }
   });
   
@@ -42,7 +43,9 @@ function notifyClients(data: any) {
   // Tüm bağlı istemcilere veriyi gönder
   clients.forEach(client => {
     try {
-      client.controller.enqueue(eventData);
+      const encoder = new TextEncoder();
+      const encodedData = encoder.encode(eventData);
+      client.controller.enqueue(encodedData);
     } catch (error) {
       console.error(`İstemciye bildirim gönderilirken hata: ${error}`);
       // Hata durumunda istemciyi listeden kaldır
