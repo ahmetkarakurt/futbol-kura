@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addClient, removeClient } from '../utils/events'; // notifyClients burada kullanılmıyor, sorun da bu zaten
+import { addClient, removeClient } from '../utils/events';
 
 export async function GET(request: NextRequest) {
   const clientId = Math.random().toString(36).substring(2, 15);
