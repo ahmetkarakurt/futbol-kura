@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  isSeed Boolean @default(false) // Seri başı mı?
+  group Group? @relation(fields: [groupId], references: [id])
+  groupId String? @db.ObjectId
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+}
+
+model Group {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  teams Team[]
+  fixtures Fixture[]
+}
+
+model Match {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  homeTeam  Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeTeamId String  @db.ObjectId
+  awayTeam  Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayTeamId String  @db.ObjectId
+  fixture   Fixture  @relation(fields: [fixtureId], references: [id])
+  fixtureId String   @db.ObjectId
+  played    Boolean  @default(false)
+  homeScore Int?
+  awayScore Int?
+}
+
+model Fixture {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String? // Fikstür adı (Örn: Grup 1 vs Grup 2)
+  round    Int
+  group    Group? @relation(fields: [groupId], references: [id])
+  groupId  String? @db.ObjectId // Opsiyonel grup ilişkisi
+  matches  Match[]
+}
