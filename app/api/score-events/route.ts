@@ -4,9 +4,6 @@ import { addClient, removeClient } from '../utils/events';
 
 const prisma = new PrismaClient();
 
-// Bu değişken tüm bağlanan istemcileri tutacak
-let clients: { id: string; controller: ReadableStreamController<any> }[] = [];
-
 // SSE bağlantısı için endpoint
 export async function GET(request: NextRequest) {
   // Her bağlantı için benzersiz bir ID oluştur
@@ -36,20 +33,4 @@ export async function GET(request: NextRequest) {
   });
 }
 
-// Diğer endpoint'ler maçları güncellediğinde tüm istemcilere haber ver
-function notifyClients(data: any) {
-  const eventData = `data: ${JSON.stringify(data)}\n\n`;
-  
-  // Tüm bağlı istemcilere veriyi gönder
-  clients.forEach(client => {
-    try {
-      const encoder = new TextEncoder();
-      const encodedData = encoder.encode(eventData);
-      client.controller.enqueue(encodedData);
-    } catch (error) {
-      console.error(`İstemciye bildirim gönderilirken hata: ${error}`);
-      // Hata durumunda istemciyi listeden kaldır
-      clients = clients.filter(c => c.id !== client.id);
-    }
-  });
-} 
+ 
