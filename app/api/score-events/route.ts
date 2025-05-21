@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Diğer endpoint'ler maçları güncellediğinde tüm istemcilere haber ver
-export function notifyClients(data: any) {
+function notifyClients(data: any) {
   const eventData = `data: ${JSON.stringify(data)}\n\n`;
   
   // Tüm bağlı istemcilere veriyi gönder
